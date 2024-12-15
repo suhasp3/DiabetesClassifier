@@ -1,87 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Diabetes Classifier</title>
+  <meta charset="UTF-8">
+  <title>Diabetes Risk Predictor</title>
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" 
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
 
-<div class="container my-5">
-  <div class="card mx-auto" style="max-width: 600px;">
-    <div class="card-body">
-      <h1 class="card-title text-center mb-4">Diabetes Prediction</h1>
-      <form method="POST" action="/" class="needs-validation" novalidate>
+<div class="container my-4">
+  <header class="mb-4 text-center">
+    <h1>Diabetes Risk Predictor</h1>
+    <p class="text-muted">Use this tool to predict your likelihood of diabetes.</p>
+  </header>
 
-        <!-- GenHlth slider (1 to 5) -->
+  <div class="row">
+    <div class="col-md-6 mx-auto">
+      <form method="POST" action="/" class="p-3 border rounded shadow-sm">
+        <h4 class="mb-3">Enter Your Information</h4>
+        
+        <!-- GenHlth: slider (1-5) -->
         <div class="mb-3">
-          <label for="GenHlth" class="form-label fw-semibold">General Health</label>
-          <small class="text-muted d-block mb-1">
-            1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor
-          </small>
-          <input type="range" class="form-range" name="GenHlth" id="GenHlth"
-                 min="1" max="5" step="1" value="3"
-                 oninput="document.getElementById('ghValue').innerText = this.value">
-          <div>
-            Current Value: <span id="ghValue" class="fw-bold">3</span>
-          </div>
+          <label for="GenHlth" class="form-label">General Health (1=Excellent ... 5=Poor)</label>
+          <input type="range" class="form-range" name="GenHlth" id="GenHlth" min="1" max="5" step="1" value="3"
+                 oninput="document.getElementById('genHlthValue').innerText = this.value">
+          <span>Value: <b id="genHlthValue">3</b></span>
         </div>
 
-        <!-- HighBP select (0 or 1) -->
+        <!-- HighBP (0 or 1) -->
         <div class="mb-3">
-          <label for="HighBP" class="form-label fw-semibold">High Blood Pressure?</label>
+          <label for="HighBP" class="form-label">High Blood Pressure? (0=No,1=Yes)</label>
           <select class="form-select" name="HighBP" id="HighBP" required>
-            <option value="" disabled selected>Select an option...</option>
+            <option value="" selected disabled>Choose...</option>
             <option value="0">No (0)</option>
             <option value="1">Yes (1)</option>
           </select>
         </div>
 
-        <!-- BMI numeric input -->
+        <!-- BMI numeric -->
         <div class="mb-3">
-          <label for="BMI" class="form-label fw-semibold">Body Mass Index (BMI)</label>
-          <input type="number" class="form-control" name="BMI" id="BMI" 
-                 min="0" max="70" step="0.1" placeholder="e.g. 25.0" required />
+          <label for="BMI" class="form-label">Body Mass Index (BMI)</label>
+          <input type="number" class="form-control" name="BMI" id="BMI" min="0" max="70" step="0.1" placeholder="25.0" required>
         </div>
 
-        <!-- DiffWalk select (0 or 1) -->
+        <!-- DiffWalk (0 or 1) -->
         <div class="mb-3">
-          <label for="DiffWalk" class="form-label fw-semibold">Difficulty Walking?</label>
+          <label for="DiffWalk" class="form-label">Difficulty Walking? (0=No,1=Yes)</label>
           <select class="form-select" name="DiffWalk" id="DiffWalk" required>
-            <option value="" disabled selected>Select an option...</option>
+            <option value="" selected disabled>Choose...</option>
             <option value="0">No (0)</option>
             <option value="1">Yes (1)</option>
           </select>
         </div>
 
-        <!-- HighChol select (0 or 1) -->
+        <!-- HighChol (0 or 1) -->
         <div class="mb-3">
-          <label for="HighChol" class="form-label fw-semibold">High Cholesterol?</label>
+          <label for="HighChol" class="form-label">High Cholesterol? (0=No,1=Yes)</label>
           <select class="form-select" name="HighChol" id="HighChol" required>
-            <option value="" disabled selected>Select an option...</option>
+            <option value="" selected disabled>Choose...</option>
             <option value="0">No (0)</option>
             <option value="1">Yes (1)</option>
           </select>
         </div>
 
-        <!-- Age numeric input -->
+        <!-- Age numeric -->
         <div class="mb-3">
-          <label for="Age" class="form-label fw-semibold">Age</label>
-          <input type="number" class="form-control" name="Age" id="Age" 
-                 min="0" max="120" step="1" placeholder="e.g. 45" required />
+          <label for="Age" class="form-label">Age</label>
+          <input type="number" class="form-control" name="Age" id="Age" min="0" max="120" step="1" required>
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Predict</button>
       </form>
     </div>
   </div>
+
+  {% if prediction is not none %}
+  <div class="row mt-5">
+    <div class="col-md-10 mx-auto">
+      <!-- Prediction Result -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h4 class="card-title">Prediction Result</h4>
+          {% if prediction == 0 %}
+            <p class="card-text text-success">No Diabetes (0)</p>
+          {% elif prediction == 1 %}
+            <p class="card-text text-warning">Prediabetes (1)</p>
+          {% else %}
+            <p class="card-text text-danger">Diabetes (2)</p>
+          {% endif %}
+          <p>
+            This prediction is based on your input. 
+            Consider consulting a healthcare professional for personalized advice.
+          </p>
+        </div>
+      </div>
+
+      <!-- Data Visualization: Plotly Chart comparing user vs population averages -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Comparison to Population Averages</h4>
+          <div id="comparisonPlot" style="width:100%; height:400px;"></div>
+        </div>
+      </div>
+
+      <!-- Health Tips / Resources -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Health Tips</h4>
+          <ul>
+            <li>If your BMI is above 25, consider consulting a healthcare professional about weight management.</li>
+            <li>Stay active! Regular exercise helps control blood pressure and cholesterol.</li>
+            <li>Monitor your blood sugar levels if you're at risk or have a family history of diabetes.</li>
+            <li>For more info, visit 
+              <a href="https://www.cdc.gov/diabetes/prevention/index.html" target="_blank">CDC - Diabetes Prevention</a>.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature Importance Explanation -->
+      {% if feature_importance %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Feature Importance</h4>
+          <p>Below are relative importance scores for each feature used by the Decision Tree model:</p>
+          <ul>
+          {% for feat, val in feature_importance.items() %}
+            <li><b>{{ feat }}:</b> {{ val|round(3) }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Interactive Decision Tree Visualization (dtreeviz) -->
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title mb-3">Interactive Decision Tree</h4>
+          {% if dtree_html %}
+            <div>{{ dtree_html|safe }}</div>
+          {% else %}
+            <p>No decision tree visualization available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 </div>
 
-<!-- Bootstrap JS (optional if you want interactive validation, etc.) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% if comparison_chart %}
+<script>
+  var chartData = {{ comparison_chart|safe }};
+  Plotly.newPlot('comparisonPlot', chartData.data, chartData.layout);
+</script>
+{% endif %}
+
 </body>
 </html>

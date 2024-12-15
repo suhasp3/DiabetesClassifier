@@ -3,21 +3,30 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
+  h1, h4 {
+    font-weight: 600;
+  }
+  
   .card {
     border: none;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
-  .card-title {
-    font-size: 1.5rem;
+  .card-body {
+    padding: 1.5rem;
   }
   
-  label {
-    margin-bottom: 0.3rem;
-  }
-  
-  input[type="range"] {
+  .form-range {
     cursor: pointer;
+  }
+  
+  ul {
+    margin-left: 1.2rem;
+  }
+  
+  footer {
+    text-align: center;
+    margin: 2rem;
   }
   
